@@ -1,74 +1,149 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- You may freely edit this file. See commented blocks below for -->
-<!-- some examples of how to customize the build. -->
-<!-- (If you delete it and reopen the project it will be recreated.) -->
-<!-- By default, only the Clean and Build commands use this build script. -->
-<!-- Commands such as Run, Debug, and Test only use this build script if -->
-<!-- the Compile on Save feature is turned off for the project. -->
-<!-- You can turn off the Compile on Save (or Deploy on Save) setting -->
-<!-- in the project's Project Properties dialog box.-->
-<project name="red5-avalon" default="default" basedir=".">
-    <description>Builds, tests, and runs the project red5-avalon.</description>
-    <import file="nbproject/build-impl.xml"/>
-    <!--
+<?xml version="1.0" ?>
+<project name="red5-avalon" basedir="." default="war" xmlns:ivy="antlib:org.apache.ivy.ant">
+  <!-- project properties -->
+  <property environment="env"/>
+  <!-- user overides for project properties -->
+  <property file="${user.home}/build.properties"/>
+  <!-- base project properties -->
+  <property file="build.properties"/>
+  <property name="java.home" value="${env.JDK_HOME}"/>
+  <property name="src.dir" value="src"/>
+  <property name="lib.dir" value="build/lib"/>
+  <property name="classes.dir" value="build/classes"/>
+  <property name="dist.dir" value="dist"/>
 
-    There exist several targets which are by default empty and which can be 
-    used for execution of your tasks. These targets are usually executed 
-    before and after some main targets. They are: 
+  <path id="project.classpath">
+    <fileset dir="${red5.root}/lib"/>
+    <pathelement location="${red5.root}/red5-server-1.0.jar"/>
+    <pathelement location="${red5.root}/lib/red5.jar"/>
+    <!-- project specific libs -->
+    <fileset dir="${lib.dir}"/>
+  </path>
 
-      -pre-init:                 called before initialization of project properties
-      -post-init:                called after initialization of project properties
-      -pre-compile:              called before javac compilation
-      -post-compile:             called after javac compilation
-      -pre-compile-single:       called before javac compilation of single file
-      -post-compile-single:      called after javac compilation of single file
-      -pre-compile-test:         called before javac compilation of JUnit tests
-      -post-compile-test:        called after javac compilation of JUnit tests
-      -pre-compile-test-single:  called before javac compilation of single JUnit test
-      -post-compile-test-single: called after javac compilation of single JUunit test
-      -pre-jar:                  called before JAR building
-      -post-jar:                 called after JAR building
-      -post-clean:               called after cleaning build products
+  <target name="prepare">
+    <mkdir dir="${classes.dir}"/>
+    <mkdir dir="${lib.dir}"/>
+    <mkdir dir="${dist.dir}"/>
+  </target>
 
-    (Targets beginning with '-' are not intended to be called on their own.)
+  <target name="clean">
+    <delete dir="${classes.dir}"/>
+    <delete dir="${dist.dir}"/>
+  </target>
 
-    Example of inserting an obfuscator after compilation could look like this:
+  <target name="retrieve" description="Retrieves the libraries if needed">
+    <taskdef uri="antlib:org.apache.ivy.ant" resource="org/apache/ivy/ant/antlib.xml"
+      classpath="${basedir}/lib/ivy.jar"/>
+    <property name="ivy.lib.dir" value="${basedir}/lib"/>
+    <ivy:settings file="ivysettings.xml"/>
+    <ivy:resolve file="ivy.xml"/>
+    <ivy:retrieve type="jar,bundle"/>
+  </target>
 
-        <target name="-post-compile">
-            <obfuscate>
-                <fileset dir="${build.classes.dir}"/>
-            </obfuscate>
-        </target>
+  <target name="compile" depends="prepare, retrieve">
+    <condition property="java.target_version" value="1.5">
+      <not>
+        <isset property="java.target_version"/>
+      </not>
+    </condition>
+    <echo>java.home is ${java.home} and the target version is ${java.target_version}</echo>
 
-    For list of available properties check the imported 
-    nbproject/build-impl.xml file. 
+    <echo>red5.root is ${red5.root}</echo>
+
+    <echo>javac version: ${java.version}</echo>
+    <property name="dest.dir" value="${classes.dir}"/>
+    <javac sourcepath="" srcdir="${src.dir}" destdir="${dest.dir}" classpathref="project.classpath"
+      optimize="${build.optimize}" verbose="${build.verbose}" fork="${build.fork}"
+      nowarn="${build.nowarn}" deprecation="${build.deprecation}" debug="${debug.state}"
+      compiler="modern" source="${java.target_version}" target="${java.target_version}"
+      listfiles="false"/>
+
+    <copy todir="${dest.dir}" failonerror="true">
+      <fileset dir="${src.dir}">
+        <include name="**/*.properties"/>
+        <include name="**/*.xml"/>
+        <include name="**/*.xsd"/>
+      </fileset>
+    </copy>
+  </target>
 
 
-    Another way to customize the build is by overriding existing main targets.
-    The targets of interest are: 
+  <target name="jar" depends="compile">
+    <tstamp prefix="build">
+      <format property="TODAY" pattern="d-MMMM-yyyy" locale="en"/>
+    </tstamp>
+    <jar destfile="${dist.dir}/${ant.project.name}.jar">
+      <fileset dir="${classes.dir}">
+        <include name="**"/>
+      </fileset>
+      <manifest>
 
-      -init-macrodef-javac:     defines macro for javac compilation
-      -init-macrodef-junit:     defines macro for junit execution
-      -init-macrodef-debug:     defines macro for class debugging
-      -init-macrodef-java:      defines macro for class execution
-      -do-jar-with-manifest:    JAR building (if you are using a manifest)
-      -do-jar-without-manifest: JAR building (if you are not using a manifest)
-      run:                      execution of project 
-      -javadoc-build:           Javadoc generation
-      test-report:              JUnit report generation
+        <attribute name="Built" value="${build.TODAY} by ${user.name}"/>
+        <attribute name="Build-OS" value="${os.name} ${os.version}"/>
+        <attribute name="Build-Java" value="Java ${java.version}"/>
+      </manifest>
+    </jar>
+  </target>
 
-    An example of overriding the target for project execution could look like this:
+  <target name="war" depends="jar">
+    <tstamp prefix="build">
+      <format property="TODAY" pattern="d-MMMM-yyyy" locale="en"/>
+    </tstamp>
+    <copy todir="www/lib" file="${dist.dir}/${ant.project.name}.jar" failonerror="true"/>
+    <war destfile="${dist.dir}/${ant.project.name}.war" webxml="www/WEB-INF/web.xml">
+      <fileset dir="www">
+        <exclude name="**/src/**"/>
+        <exclude name="**/classes/**"/>
+      </fileset>
+      <lib dir="${lib.dir}"/>
+      <manifest>
+        <attribute name="Built" value="${build.TODAY} by ${user.name}"/>
+        <attribute name="Build-OS" value="${os.name} ${os.version}"/>
+        <attribute name="Build-Java" value="Java ${java.version}"/>
+      </manifest>
+    </war>
+  </target>
 
-        <target name="run" depends="red5-avalon-impl.jar">
-            <exec dir="bin" executable="launcher.exe">
-                <arg file="${dist.jar}"/>
-            </exec>
-        </target>
+  <target name="-check-red5-home">
+    <echo message="Using ${red5.root} for Red5 root"/>
+    <condition property="red5-home-not-set" value="true">
+      <not>
+        <isset property="red5.root"/>
+      </not>
+    </condition>
+  </target>
 
-    Notice that the overridden target depends on the jar target and not only on 
-    the compile target as the regular run target does. Again, for a list of available 
-    properties which you can use, check the target you are overriding in the
-    nbproject/build-impl.xml file. 
+  <target name="deploy" depends="-check-red5-home, war" unless="red5-home-not-set"
+    description="Deploys the war while cycling the server">
+    <!-- shutdown currently running instance -->
+    <java classname="org.red5.server.Shutdown" fork="true">
+      <classpath>
+        <pathelement location="${red5.root}/conf"/>
+        <pathelement location="${red5.root}/boot.jar"/>
+      </classpath>
+      <jvmarg value="-Dred5.root=${red5.root}"/>
+      <arg value="9999"/>
+      <arg value="red5user"/>
+      <arg value="changeme"/>
+    </java>
+    <!-- copy war to red5 -->
+    <copy todir="${red5.root}/webapps" file="${dist.dir}/${ant.project.name}.war" failonerror="true"/>
+    <!--  remove currently deployed version -->
+    <delete dir="${red5.root}/webapps/${ant.project.name}" failonerror="false"/>
+    <!-- start red5 -->
+    <java classname="org.red5.server.Bootstrap" fork="true">
+      <classpath>
+        <pathelement location="${red5.root}/conf"/>
+        <pathelement location="${red5.root}/boot.jar"/>
+      </classpath>
+      <jvmarg value="-Dred5.root=${red5.root}"/>
+    </java>
+  </target>
 
-    -->
+  <target name="all" depends="clean, jar, war"/>
+
+
+  <target name="usage">
+    <echo>Type ant -p for available targets"</echo>
+  </target>
 </project>

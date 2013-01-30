@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ivy-module version="2.0" 
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:noNamespaceSchemaLocation="http://ant.apache.org/ivy/schemas/ivy.xsd">
+    <info organisation="red5" module="authdemo" />
+    <configurations>
+        <conf name="default"/>
+    </configurations>
+    <dependencies>
+        <!-- JEE -->
+        <dependency org="javax" name="javaee-api" rev="5.1.2" />
+        <!-- Spring --> 
+        <dependency org="org.springframework" name="org.springframework.asm" rev="3.1.1.RELEASE" transitive="false" />
+        <dependency org="org.springframework" name="org.springframework.beans" rev="3.1.1.RELEASE" transitive="false" />
+        <dependency org="org.springframework" name="org.springframework.context" rev="3.1.1.RELEASE" transitive="false" />
+        <dependency org="org.springframework" name="org.springframework.core" rev="3.1.1.RELEASE" transitive="false" />
+        <dependency org="org.springframework" name="org.springframework.expression" rev="3.1.1.RELEASE" transitive="false" />
+        <dependency org="org.springframework" name="org.springframework.transaction" rev="3.1.1.RELEASE" transitive="false" />
+        <dependency org="org.springframework" name="org.springframework.web" rev="3.1.1.RELEASE" transitive="false" />
+
+        <!-- Logging --> 
+<!--
+        <dependency org="org.slf4j" name="com.springsource.slf4j.api" rev="1.6.6" transitive="false" />
+        <dependency org="org.slf4j" name="com.springsource.slf4j.bridge" rev="1.6.6" transitive="false" />
+        <dependency name="jul-to-slf4j" rev="1.6.6" />
+        <dependency name="log4j-over-slf4j" rev="1.6.6" />
+        <dependency name="jcl-over-slf4j" rev="1.6.6" />    
+        <dependency name="logback-classic" rev="1.0.3" />
+        <dependency name="logback-core" rev="1.0.3" />
+-->
+    </dependencies>
+</ivy-module>
