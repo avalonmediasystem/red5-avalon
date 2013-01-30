@@ -7,7 +7,7 @@ This project implements a [StreamFilenameGenerator](http://dl.fancycode.com/red5
 ### Prerequisites
 
 * JDK 1.6 or greater
-* Apache Ant
+* [Apache Ant](http://ant.apache.org/)
 
 ### Instructions
 
