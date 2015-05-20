@@ -3,3 +3,4 @@ build
 dist
 www/lib
 .DS_Store
+/bin/
