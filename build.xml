@@ -119,7 +119,7 @@
     <java classname="org.red5.server.Shutdown" fork="true">
       <classpath>
         <pathelement location="${red5.root}/conf"/>
-        <pathelement location="${red5.root}/boot.jar"/>
+        <pathelement location="${red5.root}/red5-service.jar"/>
       </classpath>
       <jvmarg value="-Dred5.root=${red5.root}"/>
       <arg value="9999"/>
@@ -134,7 +134,7 @@
     <java classname="org.red5.server.Bootstrap" fork="true">
       <classpath>
         <pathelement location="${red5.root}/conf"/>
-        <pathelement location="${red5.root}/boot.jar"/>
+        <pathelement location="${red5.root}/red5-service.jar"/>
       </classpath>
       <jvmarg value="-Dred5.root=${red5.root}"/>
     </java>
